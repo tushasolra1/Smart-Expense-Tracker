@@ -1,0 +1,13 @@
+@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background: linear-gradient(135deg, #e879f9 0%, #c084fc 50%, #a855f7 100%); /* Bright, cool purples */
+  background-attachment: fixed;
+  font-family: 'Inter', sans-serif;
+}
+.dark body {
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%); /* Keep dark mode as is */
+}

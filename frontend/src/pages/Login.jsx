@@ -1,0 +1,59 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { FaEnvelope, FaLock } from 'react-icons/fa';
+import api from '../utils/api';
+
+const Login = ({ setIsAuthenticated }) => {
+  const [form, setForm] = useState({ email: '', password: '' });
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await api.post('/users/login', form);
+      localStorage.setItem('token', res.data.token);
+      setIsAuthenticated(true);
+      navigate('/');
+    } catch (error) {
+      alert('Login failed: ' + (error.response?.data?.message || 'Unknown error'));
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-purple-700 to-purple-500 dark:from-gray-900 dark:via-purple-900 dark:to-purple-800 p-4">
+    <div className="bg-purple-100/20 backdrop-blur-md border border-purple-300/30 rounded-2xl shadow-2xl p-8 w-full max-w-md dark:bg-purple-900/20 dark:border-purple-700/30">
+        <h2 className="text-3xl font-bold text-center text-white dark:text-gray-100 mb-6">Welcome Back</h2>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="relative">
+            <FaEnvelope className="absolute left-3 top-3 text-gray-400" />
+            <input 
+              type="email" 
+              placeholder="Email" 
+              value={form.email} 
+              onChange={(e) => setForm({ ...form, email: e.target.value })} 
+              className="w-full pl-10 pr-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-gray-300 focus:ring-2 focus:ring-blue-400 focus:outline-none transition duration-300" 
+              required 
+            />
+          </div>
+          <div className="relative">
+            <FaLock className="absolute left-3 top-3 text-gray-400" />
+            <input 
+              type="password" 
+              placeholder="Password" 
+              value={form.password} 
+              onChange={(e) => setForm({ ...form, password: e.target.value })} 
+              className="w-full pl-10 pr-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-gray-300 focus:ring-2 focus:ring-blue-400 focus:outline-none transition duration-300" 
+              required 
+            />
+          </div>
+          <button type="submit" className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-3 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition duration-300">
+            Login
+          </button>
+        </form>
+        <p className="mt-6 text-center text-white dark:text-gray-300">Don't have an account? <a href="/register" className="text-blue-300 hover:underline">Register</a></p>
+      </div>
+    </div>
+  );
+};
+
+export default Login;
