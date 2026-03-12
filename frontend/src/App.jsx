@@ -10,6 +10,7 @@ import MonthlyStats from './pages/MonthlyStats';
 import ProtectedRoute from './components/ProtectedRoute';
 import Footer from './components/Footer';
 import EditExpense from './pages/EditExpense';
+import SpendingLimits from './pages/SpendingLimits';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -50,6 +51,7 @@ function App() {
             <Route path="/category-stats" element={<ProtectedRoute><CategoryStats /></ProtectedRoute>} />
             <Route path="/monthly-stats" element={<ProtectedRoute><MonthlyStats /></ProtectedRoute>} />
             <Route path="/edit-expense/:id" element={<ProtectedRoute><EditExpense /></ProtectedRoute>} />
+            <Route path="/spending-limits" element={<ProtectedRoute><SpendingLimits /></ProtectedRoute>} />
           </Routes>
         </main>
         <Footer />

@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FaDollarSign, FaList, FaPlus } from 'react-icons/fa';
+import { FaList, FaPlus } from 'react-icons/fa';
 import api from '../utils/api';
 import ExpenseList from '../components/ExpenseList';
 
 const Dashboard = () => {
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [recentExpenses, setRecentExpenses] = useState([]);
-  const [editingExpense, setEditingExpense] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -22,12 +21,6 @@ const Dashboard = () => {
     };
     fetchData();
   }, []);
-
-  const handleEdit = (expense) => {
-    setEditingExpense(expense);
-    // You can open a modal or navigate to edit page here
-    alert('Edit functionality: ' + expense.title); // Placeholder
-  };
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-8">
@@ -51,7 +44,7 @@ const Dashboard = () => {
           </Link>
         </div>
       </div>
-      <ExpenseList onEdit={handleEdit} />
+      <ExpenseList />
     </div>
   );
 };
