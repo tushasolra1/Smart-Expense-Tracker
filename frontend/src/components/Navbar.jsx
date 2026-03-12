@@ -36,6 +36,9 @@ const Navbar = ({ isAuthenticated, setIsAuthenticated, darkMode, toggleDarkMode 
                 <Link to="/monthly-stats" className="text-white dark:text-gray-100 hover:text-blue-300 transition duration-300 flex items-center space-x-1">
                 <FaChartBar className="text-sm" /> <span>Monthly Stats</span>
                  </Link>
+                 <Link to="/spending-limits" className="text-white dark:text-gray-100 hover:text-blue-300 transition duration-300 flex items-center space-x-1">
+                     <span>Spending Limits</span>
+                  </Link>
               <button onClick={toggleDarkMode} className="text-white dark:text-gray-100 hover:text-blue-300 transition duration-300 p-2 rounded-full hover:bg-white/10">
                 {darkMode ? <FaSun /> : <FaMoon />}
               </button>
