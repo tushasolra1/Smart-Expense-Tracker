@@ -18,10 +18,11 @@ app.use(express.json());
 
 
 dotenv.config();
-connectDb();  // ✅ Connect to MongoDB
+connectDb();  // Connect to MongoDB
 
 app.use("/api/users", userRoutes);
 app.use("/api/expenses", expenseRoutes);
+app.use('/api/users', require('./routes/userRoutes'));
 
 app.get("/", (req, res) => {
   res.send("Smart Expense Tracker API Running...");

@@ -27,15 +27,16 @@ const ProfileSidebar = ({ isOpen, onClose, user, onUpdateProfile }) => {
   }, [user]);
 
   const handleSave = async () => {
-    try {
-      await api.put('/users/profile', form);
-      onUpdateProfile(form);
-      setEditMode(false);
-      alert('Profile updated! ✅');
-    } catch (error) {
-      alert('Error updating profile');
-    }
-  };
+  try {
+    const res = await api.put('/users/profile', form); 
+    onUpdateProfile(res.data);
+    setEditMode(false);
+    alert('Profile updated successfully! ✅');
+  } catch (error) {
+    console.error('Profile error:', error.response?.data || error.message);
+    alert('Error: ' + (error.response?.data?.message || 'Update failed'));
+  }
+};
 
   if (!isOpen) return null;
 
