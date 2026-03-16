@@ -21,9 +21,9 @@ const Navbar = ({ isAuthenticated, setIsAuthenticated, darkMode, toggleDarkMode,
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             
-            {/* 🔥 LOGO + TEXT - ONLY LOGO CLICKABLE */}
+            
             <div className="flex items-center space-x-3">
-              {/* CLICKABLE LOGO ONLY */}
+              
               <div 
                 className="w-12 h-12 rounded-2xl shadow-lg hover:shadow-xl hover:scale-110 cursor-pointer transition-all duration-300 hover:rotate-12 bg-gradient-to-br from-purple-500/80 to-pink-500/80 p-1"
                 onClick={() => setSidebarOpen(true)}
