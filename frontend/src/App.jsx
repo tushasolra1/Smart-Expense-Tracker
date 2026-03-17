@@ -12,6 +12,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Footer from './components/Footer';
 import EditExpense from './pages/EditExpense';
 import SpendingLimits from './pages/SpendingLimits';
+import DevDashboard from './pages/DevDashboard';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -59,6 +60,7 @@ function App() {
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />  {/* 🔥 ADD */}
             <Route path="/edit-expense/:id" element={<ProtectedRoute><EditExpense /></ProtectedRoute>} />
             <Route path="/spending-limits" element={<ProtectedRoute><SpendingLimits /></ProtectedRoute>} />
+            <Route path="/dev-dashboard" element={<DevDashboard />} />
           </Routes>
         </main>
         <Footer />
