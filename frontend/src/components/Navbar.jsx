@@ -3,11 +3,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FaUser, FaSignOutAlt, FaMoon, FaSun, FaPlus, FaChartBar, FaTimes } from 'react-icons/fa';
 import ProfileSidebar from './ProfileSidebar';
 import api from '../utils/api';
-import logo from '../assets/logo.jpg';  // 🔥 YOUR LOGO
+import logo from '../assets/logo.jpg'; 
 
-const Navbar = ({ isAuthenticated, setIsAuthenticated, darkMode, toggleDarkMode, user, setUser }) => {
+const Navbar = ({ isAuthenticated, setIsAuthenticated, darkMode, toggleDarkMode, user, setUser, hideNavbar = false }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
+  if (hideNavbar || !isAuthenticated) return null;
 
   const handleLogout = () => {
     localStorage.removeItem('token');
