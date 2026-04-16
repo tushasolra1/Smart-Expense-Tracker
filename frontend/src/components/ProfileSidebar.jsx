@@ -28,9 +28,13 @@ const ProfileSidebar = ({ isOpen, onClose, user, onUpdateProfile }) => {
 
   const handleSave = async () => {
   try {
-    const res = await api.put('/users/profile', form); 
+    const res = await api.put('/users/profile', form);
     onUpdateProfile(res.data);
     setEditMode(false);
+    
+    const freshProfile = await api.get('/users/profile');
+    onUpdateProfile(freshProfile.data);
+    
     alert('Profile updated successfully! ✅');
   } catch (error) {
     console.error('Profile error:', error.response?.data || error.message);
@@ -42,7 +46,6 @@ const ProfileSidebar = ({ isOpen, onClose, user, onUpdateProfile }) => {
 
   return (
     <>
-      {/* Overlay */}
       <div 
         className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40" 
         onClick={onClose}
@@ -146,7 +149,6 @@ const ProfileSidebar = ({ isOpen, onClose, user, onUpdateProfile }) => {
             </div>
           )}
 
-          {/* Quick Actions */}
           <div className="space-y-3">
             <button className="w-full flex items-center space-x-3 p-4 bg-white/10 hover:bg-white/20 rounded-xl transition duration-300 text-left">
               <FaDownload className="text-lg" />

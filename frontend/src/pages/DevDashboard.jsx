@@ -1,107 +1,238 @@
 import { useEffect, useState } from "react";
 
-export default function DevDashboard() {
+export default function AdminPanel() {
+  const [buildStatus, setBuildStatus] = useState("Loading...");
+  const [buildNumber, setBuildNumber] = useState("-");
+  const [buildUrl, setBuildUrl] = useState("#");
+  const [isBuilding, setIsBuilding] = useState(false);
+  const [error, setError] = useState(null);
+  const [buildHistory, setBuildHistory] = useState([]);
   const [commits, setCommits] = useState([]);
-  const [issues, setIssues] = useState([]);
-  const [status, setStatus] = useState("LOADING");
+  const [showCommits, setShowCommits] = useState(false);
 
-  useEffect(() => {
-    fetchData();
-
-    const interval = setInterval(fetchData, 10000);
-    return () => clearInterval(interval);
-  }, []);
-
+  // 🔹 FETCH JENKINS DATA
   const fetchData = async () => {
     try {
-      const [commitRes, issueRes, buildRes] = await Promise.all([
-        fetch("http://localhost:3000/api/v1/repos/tushar/expense-tracker/commits"),
-        fetch("http://localhost:3000/api/v1/repos/tushar/expense-tracker/issues"),
-        fetch("http://localhost:8080/job/ExpenseTrackerPipeline/lastBuild/api/json")
-      ]);
+      // Latest build
+      const res = await fetch(
+        "/jenkins/job/ExpenseTrackerPipeline/lastBuild/api/json"
+      );
+      const data = await res.json();
 
-      const commitData = await commitRes.json();
-      const issueData = await issueRes.json();
-      const buildData = await buildRes.json();
+      setBuildStatus(data.result || "IN PROGRESS");
+      setBuildNumber(data.number);
+      setBuildUrl(data.url);
 
-      setCommits(commitData.slice(0, 5));
-      setIssues(issueData);
-      setStatus(buildData.result || "RUNNING");
+      // Build history (last 5)
+      const historyRes = await fetch(
+        "/jenkins/job/ExpenseTrackerPipeline/api/json?tree=builds[number,result,url]{0,5}"
+      );
+      const historyData = await historyRes.json();
 
+      setBuildHistory(historyData.builds || []);
+      setError(null);
     } catch (err) {
       console.error(err);
-      setStatus("ERROR");
+      setError("Failed to fetch Jenkins data");
     }
   };
 
-  const statusColor = {
-    SUCCESS: "text-green-400",
-    FAILURE: "text-red-400",
-    RUNNING: "text-yellow-400",
-    ERROR: "text-gray-400"
+  // 🔥 TRIGGER BUILD
+  const triggerBuild = async () => {
+    try {
+      setIsBuilding(true);
+
+      await fetch(
+        "/jenkins/job/ExpenseTrackerPipeline/build",
+        {
+          method: "POST",
+        }
+      );
+
+      setTimeout(fetchData, 3000);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to trigger build");
+    } finally {
+      setIsBuilding(false);
+    }
+  };
+
+  // 🔥 FETCH COMMITS (GITEA)
+  const fetchCommits = async () => {
+  try {
+    const res = await fetch(
+      "/gitea/repos/tushar/expense-tracker/commits",
+      {
+        headers: {
+          Authorization: "token 40d8f8e6fa3193d0adddc44a3b0185c30d6f6f1f",
+        },
+      }
+    );
+
+    if (!res.ok) {
+      throw new Error("Unauthorized or failed request");
+    }
+
+    const data = await res.json();
+
+    setCommits(data.slice(0, 5));
+    setShowCommits(true);
+
+  } catch (err) {
+    console.error(err);
+    alert("❌ Failed to fetch commits");
+  }
+};
+
+  useEffect(() => {
+    fetchData();
+    const interval = setInterval(fetchData, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const getStatusColor = () => {
+    if (buildStatus === "SUCCESS") return "text-green-400";
+    if (buildStatus === "FAILURE") return "text-red-400";
+    if (buildStatus === "IN PROGRESS") return "text-yellow-400";
+    return "text-gray-400";
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-6">
+    <div className="min-h-screen text-white p-8">
       
-      {/* Title */}
-      <h1 className="text-3xl font-bold text-blue-400 mb-6">
-        🚀 DevOps Dashboard
-      </h1>
+      {/* HEADER */}
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-4xl font-bold">⚙️ Admin Panel</h1>
 
-      {/* Top Cards */}
-      <div className="grid md:grid-cols-3 gap-6 mb-6">
-        
-        <div className="bg-gray-800 p-6 rounded-xl shadow">
-          <h3 className="text-gray-400">Build Status</h3>
-          <h1 className={`text-3xl font-bold ${statusColor[status]}`}>
-            {status}
-          </h1>
-        </div>
-
-        <div className="bg-gray-800 p-6 rounded-xl shadow">
-          <h3 className="text-gray-400">Recent Commits</h3>
-          <h1 className="text-3xl font-bold">{commits.length}</h1>
-        </div>
-
-        <div className="bg-gray-800 p-6 rounded-xl shadow">
-          <h3 className="text-gray-400">Open Issues</h3>
-          <h1 className="text-3xl font-bold">{issues.length}</h1>
-        </div>
-
+        <button
+          onClick={triggerBuild}
+          className="bg-green-600 hover:bg-green-700 px-5 py-2 rounded-lg"
+        >
+          {isBuilding ? "Triggering..." : "Trigger Build 🚀"}
+        </button>
       </div>
 
-      {/* Main Grid */}
-      <div className="grid md:grid-cols-2 gap-6">
+      {error && (
+        <div className="bg-red-500/20 text-red-300 p-4 rounded-lg mb-6">
+          {error}
+        </div>
+      )}
+
+      {/* CARDS */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
-        {/* Commits */}
-        <div className="bg-gray-800 p-6 rounded-xl shadow">
-          <h2 className="text-xl font-semibold mb-4">📊 Recent Commits</h2>
+        <div className="bg-white/10 backdrop-blur-lg p-6 rounded-2xl">
+          <h2 className="text-lg mb-2">Build Status</h2>
+          <p className={`text-3xl font-bold ${getStatusColor()}`}>
+            {buildStatus}
+          </p>
+        </div>
+
+        <div className="bg-white/10 backdrop-blur-lg p-6 rounded-2xl">
+          <h2 className="text-lg mb-2">Build Number</h2>
+          <p className="text-3xl font-bold">{buildNumber}</p>
+        </div>
+
+        <div className="bg-white/10 backdrop-blur-lg p-6 rounded-2xl flex flex-col justify-between">
+          <h2 className="text-lg mb-2">Jenkins</h2>
+          <a
+            href={buildUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-4 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-center"
+          >
+            Open Build 🔗
+          </a>
+        </div>
+      </div>
+
+      {/* ADMIN CONTROLS */}
+      <div className="mt-10 bg-white/10 p-6 rounded-2xl">
+        <h2 className="text-xl mb-4">Admin Controls</h2>
+
+        <div className="flex gap-4 flex-wrap">
+          <button
+            onClick={fetchData}
+            className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg"
+          >
+            Refresh Data 🔄
+          </button>
+
+          <button
+            onClick={fetchCommits}
+            className="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg"
+          >
+            View Commits 📦
+          </button>
+        </div>
+      </div>
+
+      {/* COMMITS SECTION */}
+      {showCommits && (
+        <div className="mt-10 bg-white/10 p-6 rounded-2xl">
+          <h2 className="text-xl mb-4">📦 Recent Commits</h2>
+
           <div className="space-y-3">
-            {commits.map((c, i) => (
-              <div key={i} className="bg-gray-700 p-3 rounded">
-                ✔ {c.commit.message}
+            {commits.map((commit, index) => (
+              <div key={index} className="bg-white/5 p-4 rounded-lg">
+                <p className="font-semibold">
+                  {commit.commit.message}
+                </p>
+
+                <p className="text-sm text-gray-400">
+                  👤 {commit.commit.author.name}
+                </p>
+
+                <p className="text-xs text-gray-500">
+                  {new Date(commit.commit.author.date).toLocaleString()}
+                </p>
               </div>
             ))}
           </div>
         </div>
+      )}
 
-        {/* Issues */}
-        <div className="bg-gray-800 p-6 rounded-xl shadow">
-          <h2 className="text-xl font-semibold mb-4">🐞 Issues</h2>
-          <div className="space-y-3">
-            {issues.length === 0 ? (
-              <p className="text-green-400">No issues 🎉</p>
-            ) : (
-              issues.map((issue, i) => (
-                <div key={i} className="bg-gray-700 p-3 rounded">
-                  ⚠ {issue.title}
-                </div>
-              ))
-            )}
-          </div>
+      {/* BUILD HISTORY */}
+      <div className="mt-10 bg-white/10 p-6 rounded-2xl">
+        <h2 className="text-xl mb-4">📜 Build History</h2>
+
+        <div className="space-y-3">
+          {buildHistory.map((build) => (
+            <div
+              key={build.number}
+              className="flex justify-between items-center bg-white/5 p-4 rounded-lg"
+            >
+              <div>
+                <p className="font-bold">Build #{build.number}</p>
+                <p
+                  className={`text-sm ${
+                    build.result === "SUCCESS"
+                      ? "text-green-400"
+                      : build.result === "FAILURE"
+                      ? "text-red-400"
+                      : "text-yellow-400"
+                  }`}
+                >
+                  {build.result || "IN PROGRESS"}
+                </p>
+              </div>
+
+              <a
+                href={build.url}
+                target="_blank"
+                rel="noreferrer"
+                className="bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded-lg"
+              >
+                View 🔗
+              </a>
+            </div>
+          ))}
         </div>
+      </div>
 
+      <div className="mt-10 text-gray-400 text-sm">
+        Auto-refresh every 5s • Admin Access Enabled 🔐
       </div>
     </div>
   );

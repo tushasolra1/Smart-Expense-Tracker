@@ -12,16 +12,31 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Footer from './components/Footer';
 import EditExpense from './pages/EditExpense';
 import SpendingLimits from './pages/SpendingLimits';
+import api from './utils/api';
+import DevDashboard from "./pages/DevDashboard";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [user, setUser] = useState(null);
 
+  // 🔥 LOAD USER PROFILE FUNCTION
+  const loadUserProfile = async () => {
+    try {
+      const res = await api.get('/users/profile');
+      setUser(res.data);
+    } catch (error) {
+      console.error('Failed to load profile:', error);
+      localStorage.removeItem('token');
+      setIsAuthenticated(false);
+    }
+  };
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
       setIsAuthenticated(true);
+      loadUserProfile();  // ✅ NOW DEFINED
     }
     const savedMode = localStorage.getItem('darkMode') === 'true';
     setDarkMode(savedMode);
@@ -47,17 +62,11 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-700 to-purple-500 dark:from-gray-900 dark:via-purple-900 dark:to-purple-800 flex flex-col">
-        
-        {/* 🔥 NAVBAR - HIDDEN ON AUTH PAGES */}
         <Navbar {...navbarProps} />
-        
         <main className="flex-grow">
           <Routes>
-            {/* 🔥 AUTH PAGES - NO NAVBAR */}
             <Route path="/login" element={<Login setIsAuthenticated={setIsAuthenticated} />} />
             <Route path="/register" element={<Register setIsAuthenticated={setIsAuthenticated} />} />
-            
-            {/* 🔥 PROTECTED PAGES - WITH NAVBAR */}
             <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/add-expense" element={<ProtectedRoute><AddExpense /></ProtectedRoute>} />
             <Route path="/category-stats" element={<ProtectedRoute><CategoryStats /></ProtectedRoute>} />
@@ -65,11 +74,10 @@ function App() {
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/edit-expense/:id" element={<ProtectedRoute><EditExpense /></ProtectedRoute>} />
             <Route path="/spending-limits" element={<ProtectedRoute><SpendingLimits /></ProtectedRoute>} />
+            <Route path="/dev-dashboard" element={<ProtectedRoute><DevDashboard /></ProtectedRoute>} />
           </Routes>
         </main>
-        
-        {/* 🔥 FOOTER - HIDE ON AUTH PAGES */}
-        {!isAuthenticated && (window.location.pathname === '/login' || window.location.pathname === '/register') ? null : <Footer />}
+        <Footer />
       </div>
     </Router>
   );
